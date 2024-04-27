@@ -99,6 +99,7 @@ async function test(script: string, index: number) {
 }
 
 function back() {
+    storage.project.instructions = null;
     router.push('/describe');
 }
 
@@ -106,7 +107,7 @@ function next() {
     router.push('/structure');
 }
 
-ask(storage.project.toolchain!.tools);
+if (!storage.project.instructions) ask(storage.project.toolchain!.tools);
 </script>
 <template>
     <div class="container">
