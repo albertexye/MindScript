@@ -3,14 +3,11 @@ import ProgressSpinner from 'primevue/progressspinner';
 import FileTree from '../components/FileTree.vue';
 import ProgressBtn from '../components/ProgressBtn.vue';
 
-import { TreeNode } from '../global';
-
 import { Ref, ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useRouter } from 'vue-router';
 import { storage } from '../global';
 
-const files: Ref<TreeNode | null> = ref(null);
 const loading: Ref<boolean> = ref(true);
 
 const toast = useToast();
@@ -62,23 +59,24 @@ async function ask() {
         return;
     }
     const json = match_result[0].substring(8, match_result[0].length - 4);
-    files.value = JSON.parse(json);
+    storage.project.files = JSON.parse(json);
     loading.value = false;
 }
 
 function back() {
+    storage.project.files = null;
     router.push('/install');
 }
 
-ask();
+if (!storage.project.files) ask();
 </script>
 <template>
     <div class="container">
         <h1>Project Structure</h1>
         <ProgressSpinner v-if="loading" />
-        <div v-if="!loading && files">
+        <div v-if="!loading && storage.project.files">
             <div style="width: 60vw; margin: auto; padding-top: 1em;">
-                <FileTree :tree-node="files" />
+                <FileTree :tree-node="storage.project.files" />
             </div>
         </div>
     </div>
