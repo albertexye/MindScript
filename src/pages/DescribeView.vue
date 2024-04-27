@@ -42,7 +42,7 @@ interface ToolchainResp {
     reason?: string
 }
 
-const described = ref(storage.project.toolchains.length !== 0);
+const described = ref(storage.project.toolchains !== null);
 const loading = ref(false);
 const invalid = ref(false);
 
@@ -102,7 +102,7 @@ async function get_toolchain() {
 }
 
 const back = () => {
-    storage.project.toolchains = [];
+    storage.project.toolchains = null;
     storage.project.toolchain = null;
     if (!described.value) {
         storage.project.desc = '';
