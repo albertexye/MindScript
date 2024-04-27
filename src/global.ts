@@ -28,8 +28,8 @@ export const storage = reactive({
         model_name: 'gemini-1.5-pro-latest'
     },
     system: {
-        arch: '',
-        platform: ''
+        arch: 'unknown',
+        platform: 'unknown'
     },
     project: {
         desc: null as null | string,
