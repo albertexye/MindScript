@@ -7,8 +7,12 @@ import InputText from 'primevue/inputtext';
 import { TreeNode } from "../global";
 
 import { Ref, ref } from "vue";
+import { z } from "zod"
 
-import file_icon from "../assets/file-icon.json";
+import file_icon_json from "../assets/file-icon.json";
+
+const FileIcon = z.record(z.string(), z.string());
+const file_icon = FileIcon.parse(file_icon_json);
 
 const props = defineProps({
     treeNode: {
