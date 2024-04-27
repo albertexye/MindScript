@@ -8,6 +8,7 @@ import Button from 'primevue/button';
 import ProgressBtn from '../components/ProgressBtn.vue';
 
 import { marked } from 'marked';
+import DOMPurify from "isomorphic-dompurify";
 
 import { Ref, ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
@@ -121,7 +122,7 @@ if (!storage.project.instructions) ask(storage.project.toolchain!.tools);
                         <template v-if="instruction.steps.length !== 1" v-for="(step, s_index) in instruction.steps">
                             <StepperPanel>
                                 <template #content="{ prevCallback, nextCallback }">
-                                    <div><span v-html="marked.parse(step)"></span></div>
+                                    <div><span v-html="DOMPurify.sanitize(marked.parse(step).toString())"></span></div>
                                     <div v-if="s_index === 0" class="button-start">
                                         <Button label="Next" icon="pi pi-arrow-right" icon-pos="right"
                                             @click="nextCallback" />
