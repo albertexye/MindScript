@@ -33,9 +33,10 @@ export const storage = reactive({
     },
     project: {
         desc: null as null | string,
-        toolchains: [] as Toolchain[],
+        toolchains: null as null | Toolchain[],
         toolchain: null as null | Toolchain,
-        instructions: null as null | InstallInst[]
+        instructions: null as null | InstallInst[],
+        files: null as null | TreeNode,
     }
 });
 
