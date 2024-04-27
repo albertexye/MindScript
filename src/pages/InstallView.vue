@@ -118,7 +118,7 @@ if (!storage.project.instructions) ask(storage.project.toolchain!.tools);
                 <AccordionTab :header="instruction.name">
                     <p style="margin: 0;">{{ instruction.explanation }}</p>
                     <Stepper>
-                        <template v-for="(step, s_index) in instruction.steps">
+                        <template v-if="instruction.steps.length !== 1" v-for="(step, s_index) in instruction.steps">
                             <StepperPanel>
                                 <template #content="{ prevCallback, nextCallback }">
                                     <div><span v-html="marked.parse(step)"></span></div>
@@ -141,6 +141,13 @@ if (!storage.project.instructions) ask(storage.project.toolchain!.tools);
                                 </template>
                             </StepperPanel>
                         </template>
+                        <StepperPanel v-else>
+                            <div><span v-html="marked.parse(instruction.steps[0])"></span></div>
+                            <dib class="button-start">
+                                <Button label="Test" icon="pi pi-check-circle" icon-pos="right"
+                                            :loading="i_index in testing" @click="test(instruction.tests, i_index)" />
+                            </dib>
+                        </StepperPanel>
                     </Stepper>
                 </AccordionTab>
             </template>
