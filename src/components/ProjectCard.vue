@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Card from 'primevue/card';
+import DOMPurify from "isomorphic-dompurify";
 
 defineProps({
     name: {
@@ -10,7 +11,7 @@ defineProps({
         type: String,
         required: true
     },
-    image: {
+    icon: {
         type: String,
         required: false
     },
@@ -22,11 +23,9 @@ defineProps({
 </script>
 
 <template>
-<RouterLink :to="`/project/${path}`">
+<RouterLink :to="`/project/${encodeURIComponent(path)}`">
     <Card class="card">
-        <template #header v-if="image">
-            <img :alt="name" :src="image" />
-        </template>
+        <template #header v-if="icon" v-html="DOMPurify.sanitize(icon)" />
         <template #title>{{ name }}</template>
         <template #subtitle>{{ path }}</template>
         <template #content v-if="desc">
