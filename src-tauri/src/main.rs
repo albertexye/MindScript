@@ -1,33 +1,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::process::Command;
+use cmd_lib::run_fun;
 
 // Execute a command and return the statues
 #[tauri::command]
-fn exec_cmd(command: &str) -> (i32, String) {
+fn exec_cmd(command: &str) -> (bool, String) {
     let output = if cfg!(target_os = "windows") {
-        Command::new("cmd")
-            .arg("/C")
-            .arg(command)
-            .output()
+        run_fun!(cmd /C $command)
     } else {
-        Command::new("sh")
-            .arg("-c")
-            .arg(command)
-            .output()
+        run_fun!(sh -c $command)
     };
     match output {
-        Ok(result) => match result.status.code() {
-            Some(code) => (code, "".to_owned()),
-            None => (
-                -1,
-                match String::from_utf8(result.stderr) {
-                    Ok(stderr) => stderr,
-                    Err(_) => "".to_owned(),
-                },
-            ),
-        },
-        Err(err) => (-1, err.to_string()),
+        Ok(result) => (true, result),
+        Err(err) => (false, err.to_string())
     }
 }
 

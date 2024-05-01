@@ -49,22 +49,22 @@ async function ask(toolchains: string) {
 async function test(script: string, index: number) {
     testing.value.push(index);
     try {
-        const [code, message] = (await invoke('exec_cmd', { cmd: script })) as [number, string];
-        if (code !== 0) {
+        const [success, message] = (await invoke('exec_cmd', { cmd: script })) as [boolean, string];
+        if (!success) {
             testing.value.splice(testing.value.indexOf(index), 1);
             failing.value.push(index);
             setTimeout(() => failing.value.splice(failing.value.indexOf(index), 1), 3000);
             toast.add({
                 severity: 'error',
-                summary: `Test Failed (${code})`,
+                summary: `Test Failed`,
                 detail: message
             });
             return;
         }
-        testing.value.splice(testing.value.indexOf(index), 1);
         toast.add({
             severity: 'success',
-            summary: 'Test Passed'
+            summary: 'Test Passed',
+            detail: message
         });
     } catch (e) {
         toast.add({
@@ -72,7 +72,10 @@ async function test(script: string, index: number) {
             summary: `Test Failed`,
             detail: e
         });
+        failing.value.push(index);
+        setTimeout(() => failing.value.splice(failing.value.indexOf(index), 1), 3000);
     }
+    testing.value.splice(testing.value.indexOf(index), 1);
 }
 
 function back() {
