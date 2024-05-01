@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import Card from 'primevue/card';
-import DOMPurify from "isomorphic-dompurify";
+import { ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     name: {
         type: String,
         required: true
@@ -20,12 +20,36 @@ defineProps({
         required: true
     }
 });
+
+const b64toBlob = (b64Data: string, sliceSize=512) => {
+  const byteCharacters = atob(b64Data);
+  const byteArrays = [];
+
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+    
+  const blob = new Blob(byteArrays);
+  return blob;
+}
+
+const iconURL = ref(props.icon ? window.URL.createObjectURL(b64toBlob(props.icon)) : '');
 </script>
 
 <template>
 <RouterLink :to="`/project/${encodeURIComponent(path)}`">
     <Card class="card">
-        <template #header v-if="icon" v-html="DOMPurify.sanitize(icon)" />
+        <template #header v-if="icon">
+            <img :src="iconURL" style="max-width: 30vw; max-height: 10vh;">
+        </template>
         <template #title>{{ name }}</template>
         <template #subtitle>{{ path }}</template>
         <template #content v-if="desc">
