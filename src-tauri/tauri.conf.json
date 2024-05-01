@@ -21,6 +21,9 @@
         "scope": [
           "$APP/*"
         ]
+      },
+      "path": {
+        "all": true
       }
     },
     "windows": [

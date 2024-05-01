@@ -44,6 +44,11 @@ async fn open_file_dialog(title: String) -> String {
     }
 }
 
+#[tauri::command]
+async fn folder_exists(path: String) -> bool {
+    std::path::Path::new(&path).is_dir()
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![exec_cmd])

@@ -32,11 +32,14 @@ export const storage = reactive({
         platform: 'unknown'
     },
     project: {
+        name: null as null | string,
         desc: null as null | string,
+        icon: null as null | Blob,
         toolchains: null as null | Toolchain[],
         toolchain: null as null | Toolchain,
         instructions: null as null | InstallInst[],
         files: null as null | TreeNode,
+        location: null as null | string
     }
 });
 

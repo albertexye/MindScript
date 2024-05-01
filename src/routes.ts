@@ -18,6 +18,10 @@ const routes = [
     {
         path: '/structure',
         component: () => import("./pages/StructureView.vue")
+    },
+    {
+        path: '/name',
+        component: () => import("./pages/NameView.vue")
     }
 ];
 
