@@ -17,9 +17,9 @@ const toast = useToast();
 const router = useRouter();
 
 interface ToolchainResp {
-    state: "ok" | "info required",
-    suggestions?: Toolchain[],
-    reason?: string
+    state: "ok" | "info required";
+    toolchains?: Toolchain[];
+    reason?: string;
 }
 
 const described = ref(storage.project.toolchains !== null);
