@@ -21,6 +21,12 @@ export interface InstallInst {
     tests: string;
 };
 
+export interface GeminiOptions {
+    format: string;
+    sysIns: string;
+    userIns: string;
+}
+
 export const storage = reactive({
     gemini: {
         api_key: '',
