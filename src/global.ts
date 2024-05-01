@@ -1,5 +1,4 @@
 import { reactive } from "vue";
-import API_KEYS from "./assets/api_keys.json"
 import { arch, platform } from "@tauri-apps/api/os";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -43,5 +42,22 @@ export const storage = reactive({
     }
 });
 
+export const readFile = async (path: string) => {
+    const [err, data]: [string, Array<number>] = await invoke("read_file", {
+        "path": path
+    });
+    if (err != '') {
+        return err;
+    }
+    return new Uint8Array(data);
+};
+
 arch().then(value => storage.system.arch = value);
 platform().then(value => storage.system.platform = value);
+
+fs.exists('apiKey', { dir: BaseDirectory.App }).then(exists=>{
+    if (!exists) return;
+    readTextFile('apiKey', { dir: BaseDirectory.App }).then(value=>{
+        storage.gemini.api_key = value;
+    });
+});
