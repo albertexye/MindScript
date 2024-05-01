@@ -16,7 +16,7 @@ import { useRouter } from 'vue-router';
 import { storage, askGemini } from '../global';
 import { invoke } from '@tauri-apps/api';
 
-const loading = ref(true);
+const loading: Ref<boolean> = ref(true);
 const testing: Ref<number[]> = ref([]);
 const failing: Ref<number[]> = ref([]);
 
