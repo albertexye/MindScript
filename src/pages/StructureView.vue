@@ -38,6 +38,10 @@ function back() {
     router.push('/install');
 }
 
+function next() {
+    router.push('/name');
+}
+
 if (!storage.project.files) ask();
 </script>
 <template>
