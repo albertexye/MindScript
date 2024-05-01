@@ -33,7 +33,7 @@ const fuse = new Fuse(projects.value, {
 });
 
 async function open() {
-  await invoke("open_file_dialog", {
+  await invoke("open_folder_dialog", {
     title: "Choose a Project Folder"
   });
 }
