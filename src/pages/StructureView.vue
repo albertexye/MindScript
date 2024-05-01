@@ -16,10 +16,10 @@ const router = useRouter();
 async function ask() {
     storage.project.files = await askGemini({
         format: `
-interface Node {
-    name: string, 
-    purpose: string, 
-    children?: Node[]
+        interface Node {
+            name: string, 
+            purpose: string, 
+            children?: Node[]
         }`, 
         sysIns: `
         You are a computer science expert who is designing a project. 
@@ -53,6 +53,7 @@ if (!storage.project.files) ask();
                 <FileTree :tree-node="storage.project.files" />
             </div>
         </div>
+        <ProgressBtn :back="back" :next="next" />
     </div>
 </template>
 <style scoped>
