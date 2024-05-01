@@ -1,6 +1,8 @@
 import { reactive } from "vue";
 import { arch, platform } from "@tauri-apps/api/os";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { fs, invoke } from "@tauri-apps/api";
+import { BaseDirectory, readTextFile } from "@tauri-apps/api/fs";
 import { ToastServiceMethods } from "primevue/toastservice";
 
 export interface Toolchain {
@@ -55,6 +57,17 @@ export const readFile = async (path: string) => {
         return err;
     }
     return new Uint8Array(data);
+};
+
+export const createFile = async (path: string, data: Array<number>) => {
+    const err: string = await invoke("create_file", {
+        "path": path,
+        "data": data
+    });
+    if (err != '') {
+        return err;
+    }
+    return '';
 };
 
 export const askGemini = async (options: GeminiOptions, toast: ToastServiceMethods) => {

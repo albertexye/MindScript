@@ -34,6 +34,21 @@ async fn folder_exists(path: String) -> bool {
     std::path::Path::new(&path).is_dir()
 }
 
+#[tauri::command]
+async fn create_file(path: String, data: Vec<u8>) -> String {
+    let path = std::path::Path::new(&path);
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).unwrap();
+    let mut file = match std::fs::File::create(path) {
+        Ok(f) => f,
+        Err(e) => return e.to_string()
+    };
+    match file.write_all(&data) {
+        Ok(_) => "".to_owned(),
+        Err(e) => e.to_string()
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![exec_cmd])
