@@ -54,7 +54,6 @@ if (!storage.project.files) ask();
             </div>
         </div>
     </div>
-    <ProgressBtn :back="back" />
 </template>
 <style scoped>
 </style>
