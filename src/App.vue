@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import Toast from 'primevue/toast';
 import { RouterView } from 'vue-router';
-import { useRouter } from 'vue-router';
 
-// useRouter().push('/structure');
+// import { useRouter } from 'vue-router';
+// useRouter().push('/name');
 </script>
 <template>
   <main>
