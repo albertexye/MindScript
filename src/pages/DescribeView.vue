@@ -11,30 +11,10 @@ import { useToast } from "primevue/usetoast";
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 
-import { storage, Toolchain } from "../global";
+import { storage, Toolchain, askGemini } from "../global";
 
 const toast = useToast();
 const router = useRouter();
-const model = storage.gemini.gen_ai.getGenerativeModel({
-    model: storage.gemini.model_name,
-    systemInstruction: {
-        role: 'System',
-        parts: [
-            {
-                text: `
-You are a computer science expert who is giving solutions to build a project. 
-Host platform: ${storage.system.platform}; CPU architecture: ${storage.system.arch}. 
-Using JSON format only, tell what toolchains to use and why. 
-Give multiple options if possible. 
-Don't include the editor/IDE unless it's necessary. 
-Each option is just a string; connect multiple items within an option using '+'. 
-Strictly follow the format: {"state":"ok", "suggestions":[{"tools":"...", "reason":"..."}, {"tools":"...", "reason":"..."}]}. 
-If more information is needed to decide what tools to use, output {"state":"info required", "reason":"..."}. 
-`.replace('\n', '')
-            }
-        ]
-    }
-})!;
 
 interface ToolchainResp {
     state: "ok" | "info required",
@@ -49,39 +29,37 @@ const invalid = ref(false);
 async function get_toolchain() {
     storage.project.toolchain = null;
     loading.value = true;
-    let result;
-    try {
-        result = await model.generateContent("Project Description: \n" + storage.project.desc);
-    } catch (e) {
-        toast.add({
-            severity: "error",
-            summary: "Internal Error",
-            detail: e
-        });
-        return;
-    }
-    const text = result.response.text();
-    const re = new RegExp("^```json\n.*?\n```", "mgsv");
-    const match_result = text.match(re);
-    if (match_result == null) {
-        toast.add({
-            severity: "error",
-            summary: "Internal Error",
-            detail: text
-        });
-        return;
-    }
-    const json = match_result[0].substring(8, match_result[0].length - 4);
-    const resp: ToolchainResp = JSON.parse(json);
-    if (resp.state === 'ok' && resp.suggestions) {
+    const resp: ToolchainResp = await askGemini({
+        format: `
+        interface Toolchain {
+            tools: string;
+            reason: string;
+        }
+        interface Toolchains {
+            state: "ok" | "info required";
+            toolchains?: Toolchain[];
+            reason?: string;
+        }`, 
+        sysIns: `
+        You are a computer science expert who is giving solutions to build a project. 
+        Host platform: ${storage.system.platform}; CPU architecture: ${storage.system.arch}. 
+        Tell what toolchains to use and why. 
+        Give multiple options if possible. 
+        Don't include the editor/IDE unless it's necessary. 
+        The field "state" is "ok" unless more information is needed to decide what tools to use. 
+        In this case, the field "state" is "info required" and a reason should be given. 
+        `, 
+        userIns: "Project Description: \n" + storage.project.desc!
+    }, toast);
+    if (resp.state === 'ok' && resp.toolchains) {
         described.value = true;
-        storage.project.toolchains = resp.suggestions;
+        storage.project.toolchains = resp.toolchains;
     } else if (resp.state === 'info required') {
         if (resp.reason === null) {
             toast.add({
                 severity: "error",
-                summary: "Internal Error",
-                detail: text
+                summary: "Unexpected Answer from Gemini",
+                detail: "Missing reasons for info request"
             });
         } else {
             toast.add({
@@ -94,8 +72,8 @@ async function get_toolchain() {
     } else {
         toast.add({
             severity: "error",
-            summary: "Internal Error",
-            detail: text
+            summary: "Unexpected Answer from Gemini",
+            detail: "Invalid response state"
         });
     }
     loading.value = false;

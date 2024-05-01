@@ -1,6 +1,7 @@
 import { reactive } from "vue";
 import { arch, platform } from "@tauri-apps/api/os";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ToastServiceMethods } from "primevue/toastservice";
 
 export interface Toolchain {
     tools: string;
@@ -22,9 +23,7 @@ export interface InstallInst {
 
 export const storage = reactive({
     gemini: {
-        api_keys: API_KEYS,
-        gen_ai: new GoogleGenerativeAI(API_KEYS[0].key),
-        model_name: 'gemini-1.5-pro-latest'
+        api_key: '',
     },
     system: {
         arch: 'unknown',
@@ -50,6 +49,57 @@ export const readFile = async (path: string) => {
         return err;
     }
     return new Uint8Array(data);
+};
+
+export const askGemini = async (options: GeminiOptions, toast: ToastServiceMethods) => {
+    const genAI = new GoogleGenerativeAI(storage.gemini.api_key);
+    const model = genAI.getGenerativeModel({
+        model: 'gemini-1.5-pro-latest',
+        systemInstruction: {
+            role: 'System',
+            parts: [
+                { text: "Output JSON only. Strictly follow the format: \n" + options.format.replace(/^ +/gm, '').replace(/(\r\n|\n|\r)/gm, "") },
+                { text: options.sysIns.replace(/^ +/gm, '').replace(/(\r\n|\n|\r)/gm, "") }
+            ]
+        }
+    });
+
+    let result;
+    try {
+        result = await model.generateContent(options.userIns);
+    } catch (e) {
+        toast.add({
+            severity: "error",
+            summary: "Failed to Generate Answers",
+            detail: e
+        });
+        return;
+    }
+    const text = result.response.text();
+
+    const re = new RegExp("^```json\n.*?\n```", "mgsv");
+    const match_result = text.match(re);
+    if (match_result === null) {
+        toast.add({
+            severity: "error",
+            summary: "Unexpected Answer from Gemini",
+            detail: text
+        });
+        return;
+    }
+
+    const json = match_result[0].substring(8, match_result[0].length - 4);
+
+    try {
+        return JSON.parse(json);
+    } catch {
+        toast.add({
+            severity: "error",
+            summary: "Unexpected Answer from Gemini",
+            detail: text
+        });
+        return;
+    }
 };
 
 arch().then(value => storage.system.arch = value);

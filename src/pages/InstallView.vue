@@ -13,7 +13,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { Ref, ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useRouter } from 'vue-router';
-import { storage } from '../global';
+import { storage, askGemini } from '../global';
 import { invoke } from '@tauri-apps/api';
 
 const loading = ref(true);
@@ -22,51 +22,27 @@ const failing: Ref<number[]> = ref([]);
 
 const toast = useToast();
 const router = useRouter();
-const model = storage.gemini.gen_ai.getGenerativeModel({
-    model: storage.gemini.model_name,
-    systemInstruction: {
-        role: 'System',
-        parts: [
-            {
-                text: `
-You are a computer science expert who is giving instructions to install and setup a tool. 
-Host platform: ${storage.system.platform}; CPU architecture: ${storage.system.arch}. 
-Given the toolchains, using JSON format only, tell what each tool is and how to install it step by step, and write a shell script (the language depends on the default shell of the host) to test if the tool is ready to use. 
-Strictly follow the format: 
-[{"name":"tool 1", "explanation":"what the tool is ...", "steps":["first, ...", "second, ..."], "tests":"ls -a"}]. 
-If no tests are needed, set "tests" field to an empty string. 
-Use MarkDown for strings in "steps" field. 
-`.replace('\n', '')
-            }
-        ]
-    }
-})!;
 
 async function ask(toolchains: string) {
-    let result;
-    const re = new RegExp("^```json\n.*?\n```", "mgsv");
-    try {
-        result = await model.generateContent("Toolchains: \n" + toolchains);
-    } catch (e) {
-        toast.add({
-            severity: "error",
-            summary: "Internal Error",
-            detail: e
-        });
-        return;
-    }
-    const text = result.response.text();
-    const match_result = text.match(re);
-    if (match_result == null) {
-        toast.add({
-            severity: "error",
-            summary: "Internal Error",
-            detail: text
-        });
-        return;
-    }
-    const json = match_result[0].substring(8, match_result[0].length - 4);
-    storage.project.instructions = JSON.parse(json);
+    storage.project.instructions = await askGemini({
+        format: `
+        interface Tool {
+            name: string;
+            explanation: string;
+            steps: string[];
+            test: string;
+        }
+        type Tools = Toolchain[];`, 
+        sysIns: `
+        You are a computer science expert who is giving instructions to install and setup a tool. 
+        Host platform: ${storage.system.platform}; CPU architecture: ${storage.system.arch}. 
+        Given the toolchains, tell what each tool is and how to install it step by step, 
+        and write a line of shell script (the language depends on the default shell of the host) to test if the tool is ready to use. 
+        If no tests are needed, set "test" field to an empty string. 
+        Use MarkDown for strings in "steps" field. 
+        `, 
+        userIns: "Toolchains: " + toolchains
+    }, toast);
     loading.value = false;
 }
 
