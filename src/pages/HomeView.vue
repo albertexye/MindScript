@@ -42,7 +42,7 @@ Database.load("sqlite:projects.db").then(async db => {
   await db.execute(`
 CREATE TABLE IF NOT EXISTS "projects" (
 	"name"	TEXT NOT NULL,
-	"path"	TEXT NOT NULL UNIQUE,
+	"path"	TEXT NOT NULL,
 	"icon"	TEXT,
 	"desc"	TEXT NOT NULL,
 	PRIMARY KEY("path")
