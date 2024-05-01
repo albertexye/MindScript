@@ -3,21 +3,21 @@ import { arch, platform } from "@tauri-apps/api/os";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface Toolchain {
-    tools: string,
-    reason: string
+    tools: string;
+    reason: string;
 };
 
 export interface TreeNode {
-    name: string,
-    purpose: string,
-    children?: TreeNode[]
+    name: string;
+    purpose: string;
+    children?: TreeNode[];
 };
 
 export interface InstallInst {
-    name: string,
-    explanation: string,
-    steps: string[],
-    tests: string
+    name: string;
+    explanation: string;
+    steps: string[];
+    tests: string;
 };
 
 export const storage = reactive({
